@@ -9,6 +9,7 @@ import {
   Delegation,
   Json,
   OutRef,
+  PolicyId,
   ProtocolParameters,
   Provider,
   RewardAddress,
@@ -257,6 +258,23 @@ export class Maestro extends Provider {
     return result;
   }
 
+  async getUtxosByPolicyId(policyId: PolicyId): Promise<UTxO[]> {
+    const maestroOutRefs: MaestroOutRef[] = await this.getAllPagesData(
+      async (qry: string) =>
+        await fetch(qry, { headers: this.commonHeaders() }),
+      `${this.url}/policy/${policyId}/utxos`,
+      new URLSearchParams(),
+      "Location: getUtxosByPolicyId. Error: Could not fetch UTxOs from Maestro.",
+    );
+    const outRefs = maestroOutRefs.map(
+      (outRef: MaestroOutRef) => ({
+        txHash: outRef.tx_hash,
+        outputIndex: outRef.index
+      })
+    );
+    return await this.getUtxosByOutRef(outRefs);
+  };  
+
   private async parametrizedUtxosByOutRef(outRefs: OutRef[], param: URLSearchParams): Promise<UTxO[]> {
     const qry = `${this.url}/transactions/outputs`;
     const body = JSON.stringify(
@@ -309,6 +327,7 @@ export class Maestro extends Provider {
         : undefined,
     };
   }
+  
   private async getAllPagesData<T>(
     getResponse: (qry: string) => Promise<Response>,
     qry: string,
@@ -357,6 +376,14 @@ type MaestroScript = {
 type MaestroAsset = {
   unit: string;
   amount: number;
+};
+
+type MaestroOutRef = {
+  address: Address;
+  assets: Array<{name: string, amount: number}>;
+  index: number;
+  slot: number;
+  tx_hash: TxHash;
 };
 
 type MaestroUtxo = {
