@@ -1,12 +1,34 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: fce875e483e239caf06ee5491b3adf94e23b70b8
+// source-hash: 25a4177442409fe864c2f8d0a65b1ae148463ec1
 
 let imports = {};
 imports["__wbindgen_placeholder__"] = module.exports;
 let wasm;
 const { TextDecoder, TextEncoder } = require(`util`);
+
+const heap = new Array(128).fill(undefined);
+
+heap.push(undefined, null, true, false);
+
+function getObject(idx) {
+  return heap[idx];
+}
+
+let heap_next = heap.length;
+
+function dropObject(idx) {
+  if (idx < 132) return;
+  heap[idx] = heap_next;
+  heap_next = idx;
+}
+
+function takeObject(idx) {
+  const ret = getObject(idx);
+  dropObject(idx);
+  return ret;
+}
 
 let cachedTextDecoder = new TextDecoder("utf-8", {
   ignoreBOM: true,
@@ -28,12 +50,6 @@ function getStringFromWasm0(ptr, len) {
   return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
 
-const heap = new Array(128).fill(undefined);
-
-heap.push(undefined, null, true, false);
-
-let heap_next = heap.length;
-
 function addHeapObject(obj) {
   if (heap_next === heap.length) heap.push(heap.length + 1);
   const idx = heap_next;
@@ -41,22 +57,6 @@ function addHeapObject(obj) {
 
   heap[idx] = obj;
   return idx;
-}
-
-function getObject(idx) {
-  return heap[idx];
-}
-
-function dropObject(idx) {
-  if (idx < 132) return;
-  heap[idx] = heap_next;
-  heap_next = idx;
-}
-
-function takeObject(idx) {
-  const ret = getObject(idx);
-  dropObject(idx);
-  return ret;
 }
 
 let WASM_VECTOR_LEN = 0;
@@ -220,11 +220,12 @@ function makeMutClosure(arg0, arg1, dtor, f) {
   return real;
 }
 function __wbg_adapter_30(arg0, arg1, arg2) {
-  wasm.wasm_bindgen__convert__closures__invoke1_mut__h9aff1b1babe72eb2(
-    arg0,
-    arg1,
-    addHeapObject(arg2),
-  );
+  wasm
+    ._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hb82cc8e1534517bf(
+      arg0,
+      arg1,
+      addHeapObject(arg2),
+    );
 }
 
 function _assertClass(instance, klass) {
@@ -866,7 +867,7 @@ function handleError(f, args) {
   }
 }
 function __wbg_adapter_1684(arg0, arg1, arg2, arg3) {
-  wasm.wasm_bindgen__convert__closures__invoke2_mut__he7061673dd7691f9(
+  wasm.wasm_bindgen__convert__closures__invoke2_mut__hba965e2f0ba7a019(
     arg0,
     arg1,
     addHeapObject(arg2),
@@ -5353,7 +5354,7 @@ class Data {
    */
   static new(plutus_data) {
     _assertClass(plutus_data, PlutusData);
-    const ret = wasm.data_new(plutus_data.ptr);
+    const ret = wasm.data_get(plutus_data.ptr);
     return Data.__wrap(ret);
   }
   /**
@@ -11106,7 +11107,7 @@ class MultiHostName {
    */
   static new(dns_name) {
     _assertClass(dns_name, DNSRecordSRV);
-    const ret = wasm.multihostname_new(dns_name.ptr);
+    const ret = wasm.anchor_anchor_url(dns_name.ptr);
     return MultiHostName.__wrap(ret);
   }
 }
@@ -11948,7 +11949,7 @@ class NewConstitution {
    */
   static new(hash) {
     _assertClass(hash, DataHash);
-    const ret = wasm.newconstitution_new(hash.ptr);
+    const ret = wasm.genesiskeydelegation_vrf_keyhash(hash.ptr);
     return NewConstitution.__wrap(ret);
   }
 }
@@ -12371,7 +12372,7 @@ class ParameterChangeAction {
    * @returns {ProtocolParamUpdate}
    */
   protocol_param_update() {
-    const ret = wasm.parameterchangeaction_protocol_param_update(this.ptr);
+    const ret = wasm.governanceaction_new_parameter_change_action(this.ptr);
     return ProtocolParamUpdate.__wrap(ret);
   }
   /**
@@ -12380,7 +12381,9 @@ class ParameterChangeAction {
    */
   static new(protocol_param_update) {
     _assertClass(protocol_param_update, ProtocolParamUpdate);
-    const ret = wasm.parameterchangeaction_new(protocol_param_update.ptr);
+    const ret = wasm.governanceaction_new_parameter_change_action(
+      protocol_param_update.ptr,
+    );
     return ParameterChangeAction.__wrap(ret);
   }
 }
@@ -17784,7 +17787,7 @@ class ScriptAll {
    */
   static new(native_scripts) {
     _assertClass(native_scripts, NativeScripts);
-    const ret = wasm.scriptall_new(native_scripts.ptr);
+    const ret = wasm.scriptall_native_scripts(native_scripts.ptr);
     return ScriptAll.__wrap(ret);
   }
 }
@@ -17930,7 +17933,7 @@ class ScriptAny {
    */
   static new(native_scripts) {
     _assertClass(native_scripts, NativeScripts);
-    const ret = wasm.scriptall_new(native_scripts.ptr);
+    const ret = wasm.scriptall_native_scripts(native_scripts.ptr);
     return ScriptAny.__wrap(ret);
   }
 }
@@ -18707,7 +18710,9 @@ class ScriptPubkey {
    */
   static new(addr_keyhash) {
     _assertClass(addr_keyhash, Ed25519KeyHash);
-    const ret = wasm.scriptpubkey_new(addr_keyhash.ptr);
+    const ret = wasm.regcommitteehotkeycert_committee_cold_keyhash(
+      addr_keyhash.ptr,
+    );
     return ScriptPubkey.__wrap(ret);
   }
 }
@@ -18846,7 +18851,7 @@ class ScriptRef {
    */
   static new(script) {
     _assertClass(script, Script);
-    const ret = wasm.scriptref_new(script.ptr);
+    const ret = wasm.scriptref_get(script.ptr);
     return ScriptRef.__wrap(ret);
   }
   /**
@@ -25213,7 +25218,7 @@ class TreasuryWithdrawalsAction {
    * @returns {TreasuryWithdrawals}
    */
   withdrawals() {
-    const ret = wasm.treasurywithdrawalsaction_withdrawals(this.ptr);
+    const ret = wasm.treasurywithdrawalsaction_new(this.ptr);
     return TreasuryWithdrawals.__wrap(ret);
   }
   /**
@@ -25686,7 +25691,9 @@ class UnregCommitteeHotKeyCert {
    */
   static new(committee_cold_keyhash) {
     _assertClass(committee_cold_keyhash, Ed25519KeyHash);
-    const ret = wasm.scriptpubkey_new(committee_cold_keyhash.ptr);
+    const ret = wasm.regcommitteehotkeycert_committee_cold_keyhash(
+      committee_cold_keyhash.ptr,
+    );
     return UnregCommitteeHotKeyCert.__wrap(ret);
   }
 }
@@ -26853,14 +26860,14 @@ class Vkey {
    */
   static new(pk) {
     _assertClass(pk, PublicKey);
-    const ret = wasm.vkey_new(pk.ptr);
+    const ret = wasm.genesiskeydelegation_vrf_keyhash(pk.ptr);
     return Vkey.__wrap(ret);
   }
   /**
    * @returns {PublicKey}
    */
   public_key() {
-    const ret = wasm.vkey_public_key(this.ptr);
+    const ret = wasm.genesiskeydelegation_vrf_keyhash(this.ptr);
     return PublicKey.__wrap(ret);
   }
 }
@@ -28270,11 +28277,6 @@ class Withdrawals {
 }
 module.exports.Withdrawals = Withdrawals;
 
-module.exports.__wbindgen_string_new = function (arg0, arg1) {
-  const ret = getStringFromWasm0(arg0, arg1);
-  return addHeapObject(ret);
-};
-
 module.exports.__wbindgen_object_drop_ref = function (arg0) {
   takeObject(arg0);
 };
@@ -28297,6 +28299,11 @@ module.exports.__wbindgen_json_serialize = function (arg0, arg1) {
   getInt32Memory0()[arg0 / 4 + 0] = ptr0;
 };
 
+module.exports.__wbindgen_string_new = function (arg0, arg1) {
+  const ret = getStringFromWasm0(arg0, arg1);
+  return addHeapObject(ret);
+};
+
 module.exports.__wbg_fetch_16f5dddfc5a913a4 = function (arg0, arg1) {
   const ret = getObject(arg0).fetch(getObject(arg1));
   return addHeapObject(ret);
@@ -28309,7 +28316,7 @@ module.exports.__wbg_transaction_new = function (arg0) {
 
 module.exports.__wbindgen_string_get = function (arg0, arg1) {
   const obj = getObject(arg1);
-  const ret = typeof obj === "string" ? obj : undefined;
+  const ret = typeof (obj) === "string" ? obj : undefined;
   var ptr0 = isLikeNone(ret)
     ? 0
     : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
@@ -28379,7 +28386,7 @@ module.exports.__wbg_process_5615a087a47ba544 = function (arg0) {
 
 module.exports.__wbindgen_is_object = function (arg0) {
   const val = getObject(arg0);
-  const ret = typeof val === "object" && val !== null;
+  const ret = typeof (val) === "object" && val !== null;
   return ret;
 };
 
@@ -28632,8 +28639,8 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper7045 = function (arg0, arg1, arg2) {
-  const ret = makeMutClosure(arg0, arg1, 200, __wbg_adapter_30);
+module.exports.__wbindgen_closure_wrapper6975 = function (arg0, arg1, arg2) {
+  const ret = makeMutClosure(arg0, arg1, 225, __wbg_adapter_30);
   return addHeapObject(ret);
 };
 

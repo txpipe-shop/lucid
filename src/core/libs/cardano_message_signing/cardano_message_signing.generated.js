@@ -2351,7 +2351,7 @@ export class CounterSignature {
    * @returns {COSESignatures}
    */
   signatures() {
-    const ret = wasm.countersignature_signatures(this.ptr);
+    const ret = wasm.countersignature_new_multi(this.ptr);
     return COSESignatures.__wrap(ret);
   }
 }
