@@ -1,30 +1,8 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: 25a4177442409fe864c2f8d0a65b1ae148463ec1
+// source-hash: 0e12833826f94b0b4e81f7688702620979e2eb6e
 let wasm;
-
-const heap = new Array(128).fill(undefined);
-
-heap.push(undefined, null, true, false);
-
-function getObject(idx) {
-  return heap[idx];
-}
-
-let heap_next = heap.length;
-
-function dropObject(idx) {
-  if (idx < 132) return;
-  heap[idx] = heap_next;
-  heap_next = idx;
-}
-
-function takeObject(idx) {
-  const ret = getObject(idx);
-  dropObject(idx);
-  return ret;
-}
 
 const cachedTextDecoder = new TextDecoder("utf-8", {
   ignoreBOM: true,
@@ -46,6 +24,12 @@ function getStringFromWasm0(ptr, len) {
   return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
 
+const heap = new Array(128).fill(undefined);
+
+heap.push(undefined, null, true, false);
+
+let heap_next = heap.length;
+
 function addHeapObject(obj) {
   if (heap_next === heap.length) heap.push(heap.length + 1);
   const idx = heap_next;
@@ -53,6 +37,22 @@ function addHeapObject(obj) {
 
   heap[idx] = obj;
   return idx;
+}
+
+function getObject(idx) {
+  return heap[idx];
+}
+
+function dropObject(idx) {
+  if (idx < 132) return;
+  heap[idx] = heap_next;
+  heap_next = idx;
+}
+
+function takeObject(idx) {
+  const ret = getObject(idx);
+  dropObject(idx);
+  return ret;
 }
 
 let WASM_VECTOR_LEN = 0;
@@ -28070,6 +28070,10 @@ export class Withdrawals {
 
 const imports = {
   __wbindgen_placeholder__: {
+    __wbindgen_string_new: function (arg0, arg1) {
+      const ret = getStringFromWasm0(arg0, arg1);
+      return addHeapObject(ret);
+    },
     __wbindgen_object_drop_ref: function (arg0) {
       takeObject(arg0);
     },
@@ -28088,10 +28092,6 @@ const imports = {
       const len0 = WASM_VECTOR_LEN;
       getInt32Memory0()[arg0 / 4 + 1] = len0;
       getInt32Memory0()[arg0 / 4 + 0] = ptr0;
-    },
-    __wbindgen_string_new: function (arg0, arg1) {
-      const ret = getStringFromWasm0(arg0, arg1);
-      return addHeapObject(ret);
     },
     __wbg_fetch_16f5dddfc5a913a4: function (arg0, arg1) {
       const ret = getObject(arg0).fetch(getObject(arg1));
@@ -28377,7 +28377,7 @@ const imports = {
       const ret = wasm.memory;
       return addHeapObject(ret);
     },
-    __wbindgen_closure_wrapper6975: function (arg0, arg1, arg2) {
+    __wbindgen_closure_wrapper6976: function (arg0, arg1, arg2) {
       const ret = makeMutClosure(arg0, arg1, 225, __wbg_adapter_30);
       return addHeapObject(ret);
     },

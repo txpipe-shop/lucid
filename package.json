@@ -3,7 +3,7 @@
   "main": "./esm/mod.js",
   "types": "./types/mod.d.ts",
   "name": "lucid-txpipe",
-  "version": "0.10.9",
+  "version": "0.10.11",
   "license": "MIT",
   "author": "TxPipe-Shop",
   "description": "Lucid is a library, which allows you to create Cardano transactions and off-chain code for your Plutus contracts in JavaScript, Deno and Node.js.",

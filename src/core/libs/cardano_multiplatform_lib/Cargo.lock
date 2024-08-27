@@ -1291,7 +1291,7 @@ checksum = "c0edd1e5b14653f783770bce4a4dabb4a5108a5370a5f5d8cfe8710c361f6c8b"
 [[package]]
 name = "uplc"
 version = "1.0.29-alpha"
-source = "git+https://github.com/aiken-lang/aiken.git?rev=257bd2301965553f0acc8e9dc8d7c65f98b6f36a#257bd2301965553f0acc8e9dc8d7c65f98b6f36a"
+source = "git+https://github.com/aiken-lang/aiken.git?rev=16fb02ee49879deb16ebacefa3b26ee5a57b7f8b#16fb02ee49879deb16ebacefa3b26ee5a57b7f8b"
 dependencies = [
  "blst",
  "cryptoxide",
