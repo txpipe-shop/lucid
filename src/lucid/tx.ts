@@ -54,6 +54,7 @@ export class Tx {
       this.addScripts(tx);
       this.addInputs(tx);
       this.addReferenceInputs(tx);
+      this.addCollateral(tx);
     }
   }
 
@@ -281,6 +282,23 @@ export class Tx {
         });
       }
     }
+    return this;
+  }
+
+  private addCollateral(tx: C.Transaction): Tx {
+    const collaterals = tx.body().collateral()
+      ?.to_js_value()
+      ?.map(inputOutRef);
+    this.tasks.push(async (that) => {
+      const utxos = collaterals
+      ? await this.lucid.utxosByOutRef(collaterals)
+      : undefined;
+      if (utxos) {
+        utxos.forEach((outref) => {
+          that.txBuilder.add_collateral(utxoToCore(outref));
+        })
+      }
+    });
     return this;
   }
 
