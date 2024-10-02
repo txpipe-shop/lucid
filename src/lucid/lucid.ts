@@ -111,7 +111,7 @@ export class Lucid {
           // We have Aiken now as native plutus core engine (primary), but we still support blockfrost (secondary) in case of bugs.
           C.Blockfrost.new(
             // deno-lint-ignore no-explicit-any
-            ((provider as any)?.url || "") + "/utils/txs/evaluate",
+            ((provider as any)?.url || "") + "/utils/txs/evaluate", //  + "/utxos"
             // deno-lint-ignore no-explicit-any
             (provider as any)?.projectId || "",
           ),

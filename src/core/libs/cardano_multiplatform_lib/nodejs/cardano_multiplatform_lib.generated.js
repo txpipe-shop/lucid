@@ -1,7 +1,7 @@
 // @generated file from wasmbuild -- do not edit
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
-// source-hash: 6463e1ef6178227a7ed716ff490fdcf103bb7f8c
+// source-hash: 7eb21e2f305622e7234e65646d20d170d28d73b8
 
 let imports = {};
 imports["__wbindgen_placeholder__"] = module.exports;
@@ -219,9 +219,9 @@ function makeMutClosure(arg0, arg1, dtor, f) {
   CLOSURE_DTORS.register(real, state, state);
   return real;
 }
-function __wbg_adapter_30(arg0, arg1, arg2) {
+function __wbg_adapter_32(arg0, arg1, arg2) {
   wasm
-    ._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hb82cc8e1534517bf(
+    ._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__he44ab4a750fc22ba(
       arg0,
       arg1,
       addHeapObject(arg2),
@@ -867,7 +867,7 @@ function handleError(f, args) {
   }
 }
 function __wbg_adapter_1684(arg0, arg1, arg2, arg3) {
-  wasm.wasm_bindgen__convert__closures__invoke2_mut__hba965e2f0ba7a019(
+  wasm.wasm_bindgen__convert__closures__invoke2_mut__h3a4575c6fb242116(
     arg0,
     arg1,
     addHeapObject(arg2),
@@ -22435,9 +22435,15 @@ class TransactionBuilder {
    * @param {TransactionUnspentOutputs | undefined} collateral_utxos
    * @param {Address | undefined} collateral_change_address
    * @param {boolean | undefined} native_uplc
+   * @param {TransactionUnspentOutputs | undefined} utxo_set
    * @returns {Promise<Transaction>}
    */
-  construct(collateral_utxos, collateral_change_address, native_uplc) {
+  construct(
+    collateral_utxos,
+    collateral_change_address,
+    native_uplc,
+    utxo_set,
+  ) {
     const ptr = this.__destroy_into_raw();
     let ptr0 = 0;
     if (!isLikeNone(collateral_utxos)) {
@@ -22449,11 +22455,17 @@ class TransactionBuilder {
       _assertClass(collateral_change_address, Address);
       ptr1 = collateral_change_address.__destroy_into_raw();
     }
+    let ptr2 = 0;
+    if (!isLikeNone(utxo_set)) {
+      _assertClass(utxo_set, TransactionUnspentOutputs);
+      ptr2 = utxo_set.__destroy_into_raw();
+    }
     const ret = wasm.transactionbuilder_construct(
       ptr,
       ptr0,
       ptr1,
       isLikeNone(native_uplc) ? 0xFFFFFF : native_uplc ? 1 : 0,
+      ptr2,
     );
     return takeObject(ret);
   }
@@ -28281,11 +28293,6 @@ module.exports.__wbindgen_object_drop_ref = function (arg0) {
   takeObject(arg0);
 };
 
-module.exports.__wbindgen_string_new = function (arg0, arg1) {
-  const ret = getStringFromWasm0(arg0, arg1);
-  return addHeapObject(ret);
-};
-
 module.exports.__wbindgen_json_parse = function (arg0, arg1) {
   const ret = JSON.parse(getStringFromWasm0(arg0, arg1));
   return addHeapObject(ret);
@@ -28302,6 +28309,11 @@ module.exports.__wbindgen_json_serialize = function (arg0, arg1) {
   const len0 = WASM_VECTOR_LEN;
   getInt32Memory0()[arg0 / 4 + 1] = len0;
   getInt32Memory0()[arg0 / 4 + 0] = ptr0;
+};
+
+module.exports.__wbindgen_string_new = function (arg0, arg1) {
+  const ret = getStringFromWasm0(arg0, arg1);
+  return addHeapObject(ret);
 };
 
 module.exports.__wbg_fetch_16f5dddfc5a913a4 = function (arg0, arg1) {
@@ -28379,8 +28391,8 @@ module.exports.__wbindgen_cb_drop = function (arg0) {
   return ret;
 };
 
-module.exports.__wbg_process_5615a087a47ba544 = function (arg0) {
-  const ret = getObject(arg0).process;
+module.exports.__wbg_crypto_1d1f22824a6a080c = function (arg0) {
+  const ret = getObject(arg0).crypto;
   return addHeapObject(ret);
 };
 
@@ -28390,12 +28402,17 @@ module.exports.__wbindgen_is_object = function (arg0) {
   return ret;
 };
 
-module.exports.__wbg_versions_8404a8b21b9337ae = function (arg0) {
+module.exports.__wbg_process_4a72847cc503995b = function (arg0) {
+  const ret = getObject(arg0).process;
+  return addHeapObject(ret);
+};
+
+module.exports.__wbg_versions_f686565e586dd935 = function (arg0) {
   const ret = getObject(arg0).versions;
   return addHeapObject(ret);
 };
 
-module.exports.__wbg_node_8b504e170b6380b9 = function (arg0) {
+module.exports.__wbg_node_104a2ff8d6ea03a2 = function (arg0) {
   const ret = getObject(arg0).node;
   return addHeapObject(ret);
 };
@@ -28405,39 +28422,33 @@ module.exports.__wbindgen_is_string = function (arg0) {
   return ret;
 };
 
-module.exports.__wbg_require_0430b68b38d1a77e = function () {
-  return handleError(function (arg0, arg1, arg2) {
-    const ret = getObject(arg0).require(getStringFromWasm0(arg1, arg2));
+module.exports.__wbg_require_cca90b1a94a0255b = function () {
+  return handleError(function () {
+    const ret = module.require;
     return addHeapObject(ret);
   }, arguments);
 };
 
-module.exports.__wbg_crypto_ca5197b41df5e2bd = function (arg0) {
-  const ret = getObject(arg0).crypto;
-  return addHeapObject(ret);
-};
-
-module.exports.__wbg_msCrypto_1088c21440b2d7e4 = function (arg0) {
+module.exports.__wbg_msCrypto_eb05e62b530a1508 = function (arg0) {
   const ret = getObject(arg0).msCrypto;
   return addHeapObject(ret);
 };
 
-module.exports.__wbg_static_accessor_NODE_MODULE_06b864c18e8ae506 =
-  function () {
-    const ret = module;
-    return addHeapObject(ret);
-  };
-
-module.exports.__wbg_randomFillSync_2f6909f8132a175d = function () {
-  return handleError(function (arg0, arg1, arg2) {
-    getObject(arg0).randomFillSync(getArrayU8FromWasm0(arg1, arg2));
+module.exports.__wbg_randomFillSync_5c9c955aa56b6049 = function () {
+  return handleError(function (arg0, arg1) {
+    getObject(arg0).randomFillSync(takeObject(arg1));
   }, arguments);
 };
 
-module.exports.__wbg_getRandomValues_11a236fbf9914290 = function () {
+module.exports.__wbg_getRandomValues_3aa56aa6edec874c = function () {
   return handleError(function (arg0, arg1) {
     getObject(arg0).getRandomValues(getObject(arg1));
   }, arguments);
+};
+
+module.exports.__wbindgen_is_function = function (arg0) {
+  const ret = typeof (getObject(arg0)) === "function";
+  return ret;
 };
 
 module.exports.__wbg_self_e7c1f827057f6584 = function () {
@@ -28543,6 +28554,15 @@ module.exports.__wbg_then_f753623316e2873a = function (arg0, arg1, arg2) {
   return addHeapObject(ret);
 };
 
+module.exports.__wbg_newwithbyteoffsetandlength_9fb2f11355ecadf5 = function (
+  arg0,
+  arg1,
+  arg2,
+) {
+  const ret = new Uint8Array(getObject(arg0), arg1 >>> 0, arg2 >>> 0);
+  return addHeapObject(ret);
+};
+
 module.exports.__wbg_new_537b7341ce90bb31 = function (arg0) {
   const ret = new Uint8Array(getObject(arg0));
   return addHeapObject(ret);
@@ -28550,11 +28570,6 @@ module.exports.__wbg_new_537b7341ce90bb31 = function (arg0) {
 
 module.exports.__wbg_set_17499e8aa4003ebd = function (arg0, arg1, arg2) {
   getObject(arg0).set(getObject(arg1), arg2 >>> 0);
-};
-
-module.exports.__wbg_length_27a2afe8ab42b09f = function (arg0) {
-  const ret = getObject(arg0).length;
-  return ret;
 };
 
 module.exports.__wbg_newwithlength_b56c882b57805732 = function (arg0) {
@@ -28639,8 +28654,8 @@ module.exports.__wbindgen_memory = function () {
   return addHeapObject(ret);
 };
 
-module.exports.__wbindgen_closure_wrapper6976 = function (arg0, arg1, arg2) {
-  const ret = makeMutClosure(arg0, arg1, 225, __wbg_adapter_30);
+module.exports.__wbindgen_closure_wrapper7036 = function (arg0, arg1, arg2) {
+  const ret = makeMutClosure(arg0, arg1, 227, __wbg_adapter_32);
   return addHeapObject(ret);
 };
 

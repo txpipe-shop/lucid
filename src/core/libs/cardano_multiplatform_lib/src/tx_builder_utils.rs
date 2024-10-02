@@ -2,8 +2,12 @@ use super::*;
 
 use crate::witness_builder::RedeemerWitnessKey;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap};
-use uplc::tx::eval_phase_two_raw;
+use std::{
+    collections::{BTreeMap, HashMap},
+    str::FromStr,
+};
+use uplc::{tx::eval_phase_two_raw, Hash};
+
 
 #[cfg(all(target_arch = "wasm32", not(target_os = "emscripten")))]
 use js_sys::*;
@@ -139,14 +143,137 @@ pub fn get_ex_units(
 pub async fn get_ex_units_blockfrost(
     tx: Transaction,
     bf: &Blockfrost,
+    utxos: Option<TransactionUnspentOutputs>,
 ) -> Result<Redeemers, JsError> {
     Ok(Redeemers::new())
 }
+
+// TxIn struct
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TxIn {
+    pub txId: String, // Transaction hash for the input
+    pub index: u32,   // Index of the output within the transaction
+}
+
+// Value struct for TxOut
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BlockfrostValue {
+    pub coins: u64,                           // Lovelace amount
+    pub assets: Option<HashMap<String, u64>>, // Optional assets amounts
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BlockfrostScript {
+    pub script_hash: String, // Script in hex
+    #[serde(rename = "type")]
+    pub type_: String, // Script type
+    pub serialised_size: u64, // Script size in bytes
+}
+
+// TxOut struct
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TxOut {
+    pub address: String,                  // Output address
+    pub value: BlockfrostValue,           // The value (coins and optional assets)
+    pub datum_hash: Option<String>,       // Optional datum hash
+    pub datum: Option<String>,            // Optional datum (string or null)
+    pub script: Option<BlockfrostScript>, // Optional script (string or null)
+}
+
+// Main struct for the endpoint request
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EvaluateRequestBody {
+    pub cbor: String, // Transaction CBOR (base64 or base16)
+    #[serde(rename = "additionalUtxoSet")]
+    pub additional_utxo_set: Vec<(TxIn, TxOut)>, // Array of tuples [TxIn, TxOut]
+}
+
+fn to_blockfrost_utxo(u: TransactionUnspentOutput) -> Vec<(TxIn, TxOut)> {
+    let tx_in = TxIn {
+        txId: u.input().transaction_id().to_hex(),
+        index: u.input().index().to_str().parse().unwrap(),
+    };
+    let multiasset = u.output().amount().multiasset();
+    let assets: Option<HashMap<String, u64>> = match multiasset {
+        Some(ma) => {
+            let mut assets: HashMap<String, u64> = HashMap::new();
+            let multi_assets = ma.keys();
+            for i in 0..multi_assets.len() - 1 {
+                let policy = multi_assets.get(i);
+                let policy_assets = ma.get(&policy).unwrap();
+                let asset_names = policy_assets.keys();
+                for j in 0..asset_names.len() - 1 {
+                    let policy_asset = asset_names.get(j);
+                    let quantity = policy_assets.get(&policy_asset).unwrap();
+                    let unit = policy.to_hex() + &hex::encode(&policy_asset.name());
+                    assets.insert(unit, quantity.to_str().parse().unwrap());
+                }
+            }
+            Some(assets)
+        }
+        _ => None,
+    };
+    let tx_out = TxOut {
+        address: hex::encode(&u.output().address().to_bytes()),
+        value: BlockfrostValue {
+            coins: u.output().amount().coin().to_str().parse().unwrap(),
+            assets,
+        },
+        datum_hash: u
+            .output()
+            .datum()
+            .and_then(|datum| datum.as_data_hash().and_then(|dh| Some(dh.to_hex()))),
+        datum: u
+            .output()
+            .datum()
+            .and_then(|datum| datum.as_data().and_then(|d| Some(d.get().to_bytes())))
+            .and_then(|bytes| Some(hex::encode(bytes))),
+        script: u
+            .output()
+            .script_ref()
+            .and_then(|script| match script.get().kind() {
+                ScriptKind::PlutusScriptV1 => Some(BlockfrostScript {
+                    script_hash: script
+                        .get()
+                        .as_plutus_v1()
+                        .unwrap()
+                        .hash(ScriptHashNamespace::PlutusV1)
+                        .to_hex(),
+                    type_: std::string::String::from_str("plutusV1").unwrap(),
+                    serialised_size: script.to_bytes().len() as u64,
+                }),
+                ScriptKind::PlutusScriptV2 => Some(BlockfrostScript {
+                    script_hash: script
+                        .get()
+                        .as_plutus_v2()
+                        .unwrap()
+                        .hash(ScriptHashNamespace::PlutusV2)
+                        .to_hex(),
+                    type_: std::string::String::from_str("plutusV2").unwrap(),
+                    serialised_size: script.to_bytes().len() as u64,
+                }),
+                ScriptKind::PlutusScriptV3 => todo!("PlutusV3 not yet implemented."),
+                ScriptKind::NativeScript => Some(BlockfrostScript {
+                    script_hash: script
+                        .get()
+                        .as_native()
+                        .unwrap()
+                        .hash(ScriptHashNamespace::NativeScript)
+                        .to_hex(),
+                    type_: std::string::String::from_str("timelock").unwrap(),
+                    serialised_size: script.to_bytes().len() as u64,
+                }),
+            }),
+    };
+    vec![(tx_in, tx_out)]
+}
+
 
 #[cfg(all(target_arch = "wasm32", not(target_os = "emscripten")))]
 pub async fn get_ex_units_blockfrost(
     tx: Transaction,
     bf: &Blockfrost,
+    utxos: Option<TransactionUnspentOutputs>,
 ) -> Result<Redeemers, JsError> {
     if bf.url.is_empty() || bf.project_id.is_empty() {
         return Err(JsError::from_str(
@@ -157,12 +284,30 @@ pub async fn get_ex_units_blockfrost(
     let mut opts = RequestInit::new();
     opts.method("POST");
     let tx_hex = hex::encode(tx.to_bytes());
-    opts.body(Some(&JsValue::from(tx_hex)));
+    let (body, bodystr): (Option<JsValue>, String) = match utxos {
+        Some(ref utxosSet) => {
+            let bodyUtxos = utxosSet.0
+                .iter()
+                .map(|u| to_blockfrost_utxo(u.clone())).flatten().collect::<Vec<(TxIn, TxOut)>>();
+            let body = serde_json::json!({
+                "cbor": tx_hex,
+                "additional_utxo_set": bodyUtxos
+            })
+            .to_string();
+            (Some(JsValue::from_str(&body)), body)
+        }
+        None => (Some(JsValue::from(tx_hex)), "".to_string()),
+    };
+    opts.body(Some(&body.unwrap()));
 
-    let url = &bf.url;
+    let url = match utxos {
+        Some(_) => &format!("{}/utxos", bf.url),
+        None => &bf.url,
+    };
+//    Err(JsError::from_str(&format!("{}/{}", bodystr, url)))
 
     let request = Request::new_with_str_and_init(&url, &opts)?;
-    request.headers().set("Content-Type", "application/cbor")?;
+    request.headers().set("Content-Type", "application/json")?;
     request.headers().set("project_id", &bf.project_id)?;
 
     let window = js_sys::global().unchecked_into::<globalThis>();
@@ -174,6 +319,7 @@ pub async fn get_ex_units_blockfrost(
 
     // Convert this other `Promise` into a rust `Future`.
     let json = JsFuture::from(resp.json()?).await?;
+    //Err(JsError::from_str(&format!("{:?}", json)))
 
     // Use serde to parse the JSON into a struct.
     let redeemer_result: RedeemerResult = json.into_serde().unwrap();

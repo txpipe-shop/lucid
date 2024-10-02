@@ -2556,10 +2556,19 @@ impl TransactionBuilder {
         collateral_utxos: Option<TransactionUnspentOutputs>,
         collateral_change_address: Option<Address>,
         native_uplc: Option<bool>,
+        utxo_set: Option<TransactionUnspentOutputs>,
     ) -> Result<Transaction, JsError> {
         let this = &mut self.clone();
         this.redeemers = this.collect_redeemers();
         let (body, full_tx_size) = this.build_and_size()?;
+        let full_tx = Transaction {
+            body: body.clone(),
+            witness_set: this.get_witness_set(),
+            is_valid: true,
+            auxiliary_data: this.auxiliary_data.clone(),
+        };
+        //Err(JsError::from_str(&format!("tx: {}", hex::encode(full_tx.to_bytes()))))
+
         if full_tx_size > this.config.max_tx_size as usize {
             Err(JsError::from_str(&format!(
                 "Maximum transaction size of {} exceeded. Found: {}",
@@ -2572,7 +2581,6 @@ impl TransactionBuilder {
                 is_valid: true,
                 auxiliary_data: this.auxiliary_data.clone(),
             };
-
             if let Some(_) = &this.redeemers {
                 let updated_redeemers = if native_uplc.is_some() && native_uplc.unwrap() {
                     let mut utxos = TransactionUnspentOutputs(
@@ -2592,7 +2600,8 @@ impl TransactionBuilder {
                         this.config.slot_config,
                     )?
                 } else {
-                    get_ex_units_blockfrost(full_tx.clone(), &this.config.blockfrost).await?
+                    // aca entra y deberia estar fijada la url de evaluate con additional utxo set
+                    get_ex_units_blockfrost(full_tx.clone(), &this.config.blockfrost, utxo_set.clone()).await?
                 };
                 this.redeemers = Some(updated_redeemers);
 

@@ -526,6 +526,7 @@ export class Tx {
     change?: { address?: Address; outputData?: OutputData };
     coinSelection?: boolean;
     nativeUplc?: boolean;
+    additionalUtxoSet?: UTxO[];
   }): Promise<TxComplete> {
     if (
       [
@@ -546,6 +547,7 @@ export class Tx {
       task = this.tasks.shift();
     }
 
+    // Con una wallet seteada con utxos fijos, esto no es problema
     const utxos = await this.lucid.wallet.getUtxosCore();
 
     const changeAddress: C.Address = addressFromWithNetworkCheck(
@@ -602,12 +604,16 @@ export class Tx {
       })(),
     );
 
+    const utxoSet = C.TransactionUnspentOutputs.new();
+    options?.additionalUtxoSet?.map((u) => utxoSet.add(utxoToCore(u)));
+
     return new TxComplete(
       this.lucid,
       await this.txBuilder.construct(
         utxos,
         changeAddress,
         options?.nativeUplc === undefined ? true : options?.nativeUplc,
+        utxoSet,
       ),
     );
   }

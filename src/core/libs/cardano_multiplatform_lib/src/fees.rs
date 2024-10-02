@@ -77,6 +77,8 @@ pub fn min_fee(
         );
         fee = fee.checked_add(&refscript_fee)?;
     }
+    let half_ada: BigNum = 500_000.into();
+    fee = fee.checked_add(&half_ada)?;
     Ok(fee)
 }
 

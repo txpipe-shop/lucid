@@ -635,7 +635,7 @@ impl Deserialize for Value {
 
 // CBOR has int = uint / nint
 #[wasm_bindgen]
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Int(pub(crate) i128);
 
 to_from_bytes!(Int);
